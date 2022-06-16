@@ -1,3 +1,4 @@
+
 ---
 name: Packer build
 
@@ -62,7 +63,6 @@ jobs:
           curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
           sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
           sudo apt-get -q update && sudo apt-get -yq install packer
-
       - name: Build Artifacts
         run: |
           [[ -f Makefile ]] && make .state_ctp-docker repo=${{ env.local-repo}} tag=${{ env.local-tag }}

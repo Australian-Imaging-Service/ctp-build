@@ -1,21 +1,20 @@
 build {
-  name = "docker"
+  name = "ctp"
   sources = [
-    "source.docker.alpine"
+    "source.docker.ctp"
   ]
   provisioner "file" {
     sources = [
       "CTP-installer.jar", 
       "config-serveronly.xml",
       "Launcher.properties",
-      "run.sh"
+      "entrypoint.sh"
     ]
     destination = "/tmp/"
   }
   provisioner "shell" {
     inline = [
-      "apk update",
-      "apk add --no-cache tzdata",
+      "apt update",
       "mkdir -p /JavaPrograms/ && cd /JavaPrograms",
       "jar xf /tmp/CTP-installer.jar CTP",
       "mv /tmp/config-serveronly.xml /JavaPrograms/CTP/config.xml",
@@ -23,26 +22,30 @@ build {
       "rm -f /tmp/CTP-installer.jar"
     ]    
   }
-  post-processor "docker-tag" {
-    repository = var.repo
-    tags = var.tag
+  post-processors {
+    post-processor "docker-tag" {
+      repository = var.repo
+      tags = var.tag
+    }
+    # post-processor "docker-push" {
+    #   only = ["docker.ctp"]
+    # }
   }
 }
 variable "repo" {
   type = string
-  # default = "ghcr.io/australian-imaging-service/mirc-ctp"
 }
 variable "tag" {
   type = list(string)
 }
-source "docker" "alpine" {
-  image = "openjdk:8u212-jdk-alpine3.9"
+source "docker" "ctp" {
+  image = "openjdk:8u322-jdk-slim-bullseye"
   commit  = true
   changes = [
     "LABEL org.opencontainers.image.source https://github.com/australian-imaging-service/ctp-build",
     "USER root",
     "EXPOSE 1080 1443 25055",
     "WORKDIR /JavaPrograms/CTP",
-    "ENTRYPOINT [\"/bin/sh\", \"/tmp/run.sh\"]"
+    "ENTRYPOINT [\"/bin/bash\", \"/tmp/entrypoint.sh\"]"
   ]
 }
